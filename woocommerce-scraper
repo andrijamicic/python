@@ -1,0 +1,72 @@
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import time
+from time import sleep
+from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
+import numpy as np
+import json
+import sys
+
+products= []
+prices= []
+
+options = Options()
+options.add_argument('--window-size=1920,1200') 
+options.add_argument('start-maximized') 
+options.add_argument('--no-sandbox') 
+options.add_argument("--disable-extensions")
+options.add_argument('disable-infobars')
+options.add_argument('--headless')
+options.add_argument('--disable-gpu') 
+
+driver = webdriver.Chrome( options=options)
+
+driver.get("https://www.studiobeograd.com/cena/")
+
+SCROLL_PAUSE_TIME = 0.5
+
+# Get scroll height
+last_height = driver.execute_script("return document.body.scrollHeight")
+
+while True:
+    # Scroll down to bottom
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+    # Wait to load page
+    time.sleep(SCROLL_PAUSE_TIME)
+
+    # Calculate new scroll height and compare with last scroll height
+    new_height = driver.execute_script("return document.body.scrollHeight")
+    if new_height == last_height:
+        break
+    last_height = new_height
+
+
+k = driver.page_source
+soup=BeautifulSoup(k,'html.parser')
+productlist = soup.find_all("h2",{"class":"woocommerce-loop-product__title"})
+pricelist = soup.find_all("span",{"class":"price"})
+    
+for each in productlist: 
+    products.append(str(each.get_text()))
+
+for each in pricelist: 
+    prices.append(str(each.get_text()))
+
+arr1 = np.array(products)
+arr2 = np.array(prices)
+arr = np.stack((arr1, arr2), axis=1)
+
+x = arr.tolist() 
+y = json.dumps(x)
+
+original_stdout = sys.stdout
+with open('productdata.json', 'w') as f:
+    sys.stdout = f 
+    print(y)
+    sys.stdout = original_stdout 
+
+file = open("webpage.html", "w", encoding='utf8')
+file.write(driver.page_source)
+file.close()
