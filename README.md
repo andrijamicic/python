@@ -1,5 +1,6 @@
 # python
-python scripts
+python scripts for practice
+Author: Andrija Mićić
 
 scan-site - cache warmer
 
