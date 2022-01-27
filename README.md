@@ -1,4 +1,4 @@
-# python
+# python scripts
 python scripts for practice
 Author: Andrija Mićić
 
